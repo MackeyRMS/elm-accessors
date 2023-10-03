@@ -12,9 +12,9 @@ module Tree.Accessors exposing
 
 import Base exposing (Lens, Traversal, Traversal_)
 import Tree exposing (Tree)
-import Tree.Extra.Lue as Tree
+import Tree.Navigate
+import Tree.Path exposing (TreePath)
 import Tree.Zipper as Zipper
-import TreePath exposing (TreePath)
 
 
 {-| This accessor combinator lets you access the label at a particular TreePath.
@@ -105,8 +105,8 @@ path : TreePath -> Traversal (Tree a) (Tree a) x y
 path p =
     Base.traversal
         ("<" ++ String.join ", " (List.map String.fromInt p) ++ ">")
-        (Tree.at p >> Maybe.map List.singleton >> Maybe.withDefault [])
-        (Tree.updateAt p)
+        (Tree.Navigate.to p >> Maybe.map List.singleton >> Maybe.withDefault [])
+        (Tree.Navigate.alter p)
 
 
 {-| This accessor combinator lets you modify the type of each label of a Tree.
