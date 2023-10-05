@@ -3,7 +3,7 @@
     "name": "MackeyRMS/elm-accessors",
     "summary": "Accessors, a library implementing lenses for Elm.",
     "license": "MIT",
-    "version": "2.0.0",
+    "version": "3.0.0",
     "exposed-modules": [
         "Accessors",
         "Array.Accessors",
