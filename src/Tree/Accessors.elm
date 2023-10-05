@@ -39,8 +39,8 @@ import Tree.Zipper as Zipper
     --> tree "root" [ tree "A" [ leaf "b" ] , tree "x" [ leaf "y" ] ]
 
 -}
-at : bump -> TreePath -> Traversal (Tree a) a x y
-at _ p =
+at : TreePath -> Traversal (Tree a) a x y
+at p =
     path p << label_
 
 
