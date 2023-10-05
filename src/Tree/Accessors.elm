@@ -73,7 +73,7 @@ label_ : Lens ls (Tree a) a x y
 label_ =
     Base.lens "-label"
         Tree.label
-        (\s b -> Tree.mapLabel (always b) s)
+        (\s b -> Tree.updateLabel (always b) s)
 
 
 {-| This accessor combinator lets you access a sub-tree at a given TreePath.
@@ -136,7 +136,7 @@ path p =
 -}
 each : Traversal_ (Tree a) (Tree b) a b x y
 each =
-    Base.traversal "<>" Tree.flatten Tree.map
+    Base.traversal "<>" Tree.toList Tree.map
 
 
 {-| -}
@@ -153,7 +153,7 @@ at_ toString id_ =
             t
                 |> Zipper.fromTree
                 |> Zipper.findFromRoot (\i -> i.id == id_)
-                |> Maybe.map (Zipper.mapTree fn >> Zipper.toTree)
+                |> Maybe.map (Zipper.updateTree fn >> Zipper.toTree)
                 |> Maybe.withDefault t
         )
 
