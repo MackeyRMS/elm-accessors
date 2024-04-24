@@ -10,7 +10,12 @@ import Maybe.Accessors as Maybe
 import Test exposing (Test, describe, test)
 import Tree exposing (Tree, tree)
 import Tree.Accessors as Tree
-import Tree.Extra.Lue as Tree exposing (leaf)
+import String exposing (words)
+
+
+leaf : a -> Tree a
+leaf a =
+    tree a []
 
 
 suite : Test
