@@ -22,8 +22,11 @@ import Tree.Zipper as Zipper
     import Accessors exposing (..)
     import Tree exposing (Tree, tree)
     import Tree.Accessors as Tree
-    import Tree.Extra.Lue exposing (leaf)
     import Lens as L
+
+    leaf : a -> Tree a
+    leaf a =
+        tree a []
 
     simpleTree : Tree String
     simpleTree =
@@ -49,8 +52,11 @@ at p =
     import Accessors exposing (..)
     import Tree exposing (Tree, tree)
     import Tree.Accessors as Tree
-    import Tree.Extra.Lue exposing (leaf)
     import Lens as L
+
+    leaf : a -> Tree a
+    leaf a =
+        tree a []
 
     simpleTree : Tree String
     simpleTree =
@@ -81,8 +87,12 @@ label_ =
     import Accessors exposing (..)
     import Tree exposing (Tree, tree)
     import Tree.Accessors as Tree
-    import Tree.Extra.Lue exposing (leaf)
     import Lens as L
+
+    leaf : a -> Tree a
+    leaf a =
+        tree a []
+
 
     simpleTree : Tree String
     simpleTree =
@@ -97,7 +107,7 @@ label_ =
     set (Tree.path [1,0]) (tree "hey!" [leaf "deeper"]) simpleTree
     --> tree "root" [ tree "a" [ leaf "b" ] , tree "x" [ tree "hey!" [leaf "deeper"] ] ]
 
-    map (Tree.path [0]) (Tree.mapLabel (\s -> "gimme an " ++ String.toUpper s ++ "!")) simpleTree
+    map (Tree.path [0]) (Tree.updateLabel (\s -> "gimme an " ++ String.toUpper s ++ "!")) simpleTree
     --> tree "root" [ tree "gimme an A!" [ leaf "b" ] , tree "x" [ leaf "y" ] ]
 
 -}
@@ -114,8 +124,11 @@ path p =
     import Accessors exposing (..)
     import Tree exposing (Tree, tree)
     import Tree.Accessors as Tree
-    import Tree.Extra.Lue exposing (leaf)
     import Lens as L
+
+    leaf : a -> Tree a
+    leaf a =
+        tree a []
 
     simpleTree : Tree String
     simpleTree =
