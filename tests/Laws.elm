@@ -32,6 +32,7 @@ import Lens as L
 import Maybe exposing (Maybe)
 import String
 import Test exposing (..)
+import Tuple.Extra as Tpl
 
 
 eq : a -> a -> Expectation
@@ -281,33 +282,20 @@ isColorIso :
         }
     -> Test
 isColorIso i fzrs =
-    let
-        rounded fn a b =
-            let
-                roundedA =
-                    fn a |> Color.toRgba
-
-                roundedB =
-                    fn b |> Color.toRgba
-            in
-            Expect.all
-                [ \() -> Expect.within (Absolute 0.01) roundedA.red roundedB.red
-                , \() -> Expect.within (Absolute 0.01) roundedA.green roundedB.green
-                , \() -> Expect.within (Absolute 0.01) roundedA.blue roundedB.blue
-                , \() -> Expect.within (Absolute 0.01) roundedA.alpha roundedB.alpha
-                ]
-                ()
-    in
     describe ("isIso: " ++ A.name i)
         [ fuzz fzrs.s
             "iso_hither"
             (\fuzzed ->
-                rounded fzrs.sToColor fuzzed (from i (to i fuzzed))
+                rounded fzrs.sToColor
+                    fuzzed
+                    (from i (to i fuzzed))
             )
         , fuzz fzrs.a
             "iso_yon"
             (\fuzzed ->
-                rounded fzrs.aToColor fuzzed (to i (from i fuzzed))
+                rounded fzrs.aToColor
+                    fuzzed
+                    (to i (from i fuzzed))
             )
         , describe ("isLens: " ++ A.name i)
             [ describe ("isSetable: " ++ A.name i)
@@ -365,6 +353,22 @@ isColorIso i fzrs =
                 )
             ]
         ]
+
+
+rounded : (a -> Color) -> a -> a -> Expectation
+rounded toClr a b =
+    Expect.all
+        [ within01 << Tpl.map .red
+        , within01 << Tpl.map .green
+        , within01 << Tpl.map .blue
+        , within01 << Tpl.map .alpha
+        ]
+        (Tpl.map (Color.toRgba << toClr) ( a, b ))
+
+
+within01 : ( Float, Float ) -> Expectation
+within01 ( a, b ) =
+    Expect.within (Absolute 0.01) a b
 
 
 setter_id : An_Optic pr ls s a -> s -> Bool
