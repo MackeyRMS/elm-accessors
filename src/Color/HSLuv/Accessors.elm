@@ -8,7 +8,6 @@ module Color.HSLuv.Accessors exposing (iso)
 
 import Base exposing (Iso)
 import Color exposing (Color)
-import Color.Round as Round
 import HSLuv exposing (HSLuv)
 
 
@@ -16,12 +15,13 @@ import HSLuv exposing (HSLuv)
 
     import Accessors exposing (to, from)
     import Color
+    import Color.Round as Round
 
 
-    from iso <| to iso Color.red
-    --> Color.red
+    Round.rgb (from iso <| to iso Color.yellow)
+    --> Round.rgb Color.yellow
 
 -}
 iso : Iso pr ls Color HSLuv x y
 iso =
-    Base.iso "color_hsluv" HSLuv.color (HSLuv.toColor >> Round.rgb)
+    Base.iso "color_hsluv" HSLuv.color HSLuv.toColor
