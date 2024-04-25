@@ -302,7 +302,9 @@ to =
 -}
 swap : An_Iso_ s t a b -> Optic pr ls b a t s x y
 swap i =
-    iso (name i) (from i) (to i)
+    iso (String.join "_" (List.reverse (String.split "_" (name i))))
+        (from i)
+        (to i)
 
 
 
@@ -927,10 +929,11 @@ hexA =
 {-| oklch: This accessor lets you convert between oklch & avh4/elm-color
 
     import Color
+    import Color.Round as Round
 
 
-    from oklch <| to oklch Color.red
-    --> Color.red
+    Color.blue |> to oklch |> from oklch |> Round.rgb
+    --> Round.rgb Color.blue
 
 -}
 oklch : Iso pr ls Color Oklch x y
@@ -941,10 +944,11 @@ oklch =
 {-| oklab: This accessor lets you convert between oklch & avh4/elm-color
 
     import Color
+    import Color.Round as Round
 
 
-    from (oklch << oklab) <| to (oklch << oklab) Color.red
-    --> Color.red
+     Color.blue |> to (oklch << oklab) |> from (oklch << oklab) |> Round.rgb
+    --> Round.rgb Color.blue
 
 -}
 oklab : Iso pr ls Oklch Oklab x y
@@ -969,10 +973,11 @@ elmui =
 {-| hsluv: This accessor lets you convert between oklch & avh4/elm-color
 
     import Color
+    import Color.Round as Round
 
 
-    from hsluv <| to hsluv Color.red
-    --> Color.red
+    Color.blue |> to hsluv |> from hsluv |> Round.rgb
+    --> Round.rgb Color.blue
 
 -}
 hsluv : Iso pr ls Color HSLuv x y

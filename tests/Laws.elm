@@ -6,20 +6,28 @@ import Accessors as A
         , A_Prism
         , An_Iso
         , An_Optic
-        , An_Optic_
         , Iso
-        , Iso_
+        , elmui
         , from
+        , hsluv
         , iso
         , new
+        , oklch
+        , swap
         , to
         , try
         )
 import Array exposing (Array)
 import Base exposing (A_Lens, Optic)
+import Color exposing (Color)
+import Color.Blending as ColorX
+import Color.Oklch as Oklch exposing (Oklch)
+import Colors exposing (..)
 import Dict exposing (Dict)
-import Expect exposing (Expectation)
+import Element
+import Expect exposing (Expectation, FloatingPointTolerance(..))
 import Fuzz exposing (Fuzzer, int, string)
+import HSLuv exposing (HSLuv)
 import Lens as L
 import Maybe exposing (Maybe)
 import String
@@ -61,8 +69,44 @@ suite =
             , isPrism A.ok (Fuzz.result int string) string
             , isPrism A.err (Fuzz.result int string) int
             , isIso intMaybe { s = Fuzz.maybe Fuzz.unit, a = Fuzz.bool, endo = boolFun }
+            , isIso (swap elmui)
+                { s = oneOfValues elmUIColors
+                , a = oneOfValues colorColors
+                , endo = colorFun
+                }
+            , isIso elmui
+                { s = oneOfValues colorColors
+                , a = oneOfValues elmUIColors
+                , endo = elmUIFun
+                }
+            , isColorIso (swap hsluv << elmui)
+                { s = oneOfValues hsluvColors
+                , a = oneOfValues elmUIColors
+                , endo = elmUIFun
+                , aToColor = Element.toRgb >> Color.fromRgba
+                , sToColor = HSLuv.toColor
+                }
+            , isColorIso (swap oklch << elmui)
+                { s = oneOfValues oklchColors
+                , a = oneOfValues elmUIColors
+                , endo = elmUIFun
+                , aToColor = Element.toRgb >> Color.fromRgba
+                , sToColor = Oklch.toColor
+                }
+            , isColorIso (swap oklch)
+                { s = oneOfValues oklchColors
+                , a = oneOfValues colorColors
+                , endo = colorFun
+                , aToColor = identity
+                , sToColor = Oklch.toColor
+                }
             ]
         ]
+
+
+oneOfValues : List a -> Fuzzer a
+oneOfValues =
+    Fuzz.oneOf << List.map Fuzz.constant
 
 
 intMaybe : Iso pr ls (Maybe ()) Bool x y
@@ -92,9 +136,6 @@ type alias Function a =
 strFun : Fuzzer (Function String)
 strFun =
     Fuzz.oneOf
-        -- [ Fuzz.map String.reverse string
-        -- , String.toUpper
-        -- , String.toLower
         [ Fuzz.map String.append string
         , Fuzz.map (\s -> String.append s >> String.reverse) string
         , Fuzz.map (\s -> String.append s >> String.toUpper) string
@@ -120,6 +161,22 @@ boolFun =
         ]
 
 
+elmUIFun : Fuzzer (Function Element.Color)
+elmUIFun =
+    Fuzz.oneOf
+        [ Fuzz.map (blend 0.1) (oneOfValues elmUIColors)
+        , Fuzz.map (blend 0.2) (oneOfValues elmUIColors)
+        ]
+
+
+colorFun : Fuzzer (Function Color)
+colorFun =
+    Fuzz.oneOf
+        [ Fuzz.map ColorX.lighten (oneOfValues colorColors)
+        , Fuzz.map ColorX.darken (oneOfValues colorColors)
+        ]
+
+
 maybeStrFun : Fuzzer (Function (Maybe String))
 maybeStrFun =
     Fuzz.oneOf
@@ -134,7 +191,7 @@ maybeStrFun =
 
 personFuzzer : Fuzzer Person
 personFuzzer =
-    Fuzz.map (\_ -> Person) Fuzz.unit
+    Fuzz.constant Person
         |> Fuzz.andMap string
         |> Fuzz.andMap int
         |> Fuzz.andMap (Fuzz.maybe string)
@@ -213,6 +270,103 @@ isIso i fzrs =
         ]
 
 
+isColorIso :
+    An_Iso s a
+    ->
+        { a : Fuzzer a
+        , endo : Fuzzer (a -> a)
+        , s : Fuzzer s
+        , aToColor : a -> Color
+        , sToColor : s -> Color
+        }
+    -> Test
+isColorIso i fzrs =
+    let
+        rounded fn a b =
+            let
+                roundedA =
+                    fn a |> Color.toRgba
+
+                roundedB =
+                    fn b |> Color.toRgba
+            in
+            Expect.all
+                [ \() -> Expect.within (Absolute 0.01) roundedA.red roundedB.red
+                , \() -> Expect.within (Absolute 0.01) roundedA.green roundedB.green
+                , \() -> Expect.within (Absolute 0.01) roundedA.blue roundedB.blue
+                , \() -> Expect.within (Absolute 0.01) roundedA.alpha roundedB.alpha
+                ]
+                ()
+    in
+    describe ("isIso: " ++ A.name i)
+        [ fuzz fzrs.s
+            "iso_hither"
+            (\fuzzed ->
+                rounded fzrs.sToColor fuzzed (from i (to i fuzzed))
+            )
+        , fuzz fzrs.a
+            "iso_yon"
+            (\fuzzed ->
+                rounded fzrs.aToColor fuzzed (to i (from i fuzzed))
+            )
+        , describe ("isLens: " ++ A.name i)
+            [ describe ("isSetable: " ++ A.name i)
+                [ fuzz fzrs.s
+                    "identity"
+                    (\fuzzed ->
+                        rounded fzrs.sToColor fuzzed (A.map i identity fuzzed)
+                    )
+                , fuzz (Fuzz.tuple3 ( fzrs.s, fzrs.endo, fzrs.endo ))
+                    "composition"
+                    (\( s, f, g ) ->
+                        rounded fzrs.sToColor
+                            (A.map i f (A.map i g s))
+                            (A.map i (f << g) s)
+                    )
+                , fuzz (Fuzz.tuple3 ( fzrs.s, fzrs.a, fzrs.a ))
+                    "set_set"
+                    (\( s, a, b ) ->
+                        rounded fzrs.sToColor
+                            (A.set i b (A.set i a s))
+                            (A.set i b s)
+                    )
+                ]
+            , fuzz fzrs.s
+                "lens_set_get"
+                (\fuzzed ->
+                    rounded fzrs.sToColor
+                        (A.set i (A.get i fuzzed) fuzzed)
+                        fuzzed
+                )
+            , fuzz (Fuzz.tuple ( fzrs.s, fzrs.a ))
+                "lens_get_set"
+                (\( s, a ) ->
+                    rounded fzrs.aToColor
+                        (A.get i (A.set i a s))
+                        a
+                )
+            ]
+        , describe
+            ("isPrism: " ++ A.name i)
+            [ fuzz (Fuzz.tuple ( fzrs.s, fzrs.a ))
+                "yin"
+                (\( s, a ) ->
+                    Expect.all
+                        [ \() ->
+                            rounded fzrs.sToColor
+                                (Maybe.withDefault s <| Maybe.map (new i) (try i s))
+                                s
+                        , \() ->
+                            rounded (Maybe.map fzrs.aToColor >> Maybe.withDefault Color.black)
+                                (try i (new i a))
+                                (Just a)
+                        ]
+                        ()
+                )
+            ]
+        ]
+
+
 setter_id : An_Optic pr ls s a -> s -> Bool
 setter_id l s =
     A.map l identity s == s
@@ -268,3 +422,42 @@ iso_yon l a =
 -- traverse_compose : (Applicative f, Applicative g, Eq (f (g s)))
 --                     => Traversal' s a -> (a -> g a) -> (a -> f a) -> s -> Bool
 -- traverse_compose t f g s = (fmap (t f) . t g) s == (getCompose . t (Compose . fmap f . g)) s
+
+
+elmUIColors : List Element.Color
+elmUIColors =
+    [ systemBlack
+    , black
+    , verityBlack
+    , offBlackForTab
+    , bodyFontColor
+    , white
+    , dullWhite
+    , red
+    , lightCinder
+    , yellow
+    , green
+    , brightGreen
+    , blue
+    , lightBlue
+    , gray0
+    , gray1
+    , gray2
+    , gray3
+    , gray4
+    ]
+
+
+colorColors : List Color
+colorColors =
+    List.map (Element.toRgb >> Color.fromRgba) elmUIColors
+
+
+hsluvColors : List HSLuv
+hsluvColors =
+    List.map HSLuv.color colorColors
+
+
+oklchColors : List Oklch
+oklchColors =
+    List.map Oklch.fromColor colorColors
