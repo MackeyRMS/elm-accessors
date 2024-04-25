@@ -3,7 +3,7 @@
     "name": "MackeyRMS/elm-accessors",
     "summary": "Accessors, a library implementing lenses for Elm.",
     "license": "MIT",
-    "version": "3.0.0",
+    "version": "3.0.1",
     "exposed-modules": [
         "Accessors",
         "Array.Accessors",
@@ -20,14 +20,14 @@
         "MackeyRMS/elm-rosetree-path": "1.0.0 <= v < 2.0.0",
         "MackeyRMS/elm-ui": "1.0.6 <= v < 2.0.0",
         "avh4/elm-color": "1.0.0 <= v < 2.0.0",
-        "noahzgordon/elm-color-extra": "1.0.2 <= v < 2.0.0",
         "elm/core": "1.0.0 <= v < 2.0.0",
-        "gampleman/elm-rosetree": "1.0.0 <= v < 2.0.0",
         "elmcraft/core-extra": "2.0.0 <= v < 3.0.0",
+        "gampleman/elm-rosetree": "1.0.0 <= v < 2.0.0",
         "kuon/elm-hsluv": "3.0.2 <= v < 4.0.0",
         "miniBill/elm-oklch": "1.0.0 <= v < 2.0.0",
         "miyamoen/select-list": "4.1.0 <= v < 5.0.0",
         "myrho/elm-round": "1.0.5 <= v < 2.0.0",
+        "noahzgordon/elm-color-extra": "1.0.2 <= v < 2.0.0",
         "tesk9/palette": "3.0.1 <= v < 4.0.0"
     },
     "test-dependencies": {
