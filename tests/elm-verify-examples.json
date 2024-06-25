@@ -7,6 +7,7 @@
     "Color.Oklch.Accessors",
     "Color.HSLuv.Accessors",
     "Color.Palette.Accessors",
+    "Color.Hex.Accessors",
     "Dict.Accessors",
     "List.Accessors",
     "SelectList.Accessors",

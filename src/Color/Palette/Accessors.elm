@@ -1,12 +1,12 @@
-module Color.Palette.Accessors exposing (hexA, solid, transparent)
+module Color.Palette.Accessors exposing (solid, transparent)
 
 {-| Color.Palette.Accessors
 
-@docs hexA, solid, transparent
+@docs solid, transparent
 
 -}
 
-import Base exposing (Iso, Prism)
+import Base exposing (Iso)
 import Color exposing (Color)
 import Color.Round as Round
 import SolidColor exposing (SolidColor)
@@ -47,25 +47,6 @@ transparent =
 solid : Iso pr ls TransparentColor SolidColor x y
 solid =
     Base.iso "color_solid" TransparentColor.toColor (TransparentColor.fromColor TransparentColor.opaque)
-
-
-{-| hex: This accessor lets you convert between tesk9/palette TransparentColor && SolidColor
-
-    import Accessors exposing (swap, new, try)
-    import Color
-
-
-    new (hexA << swap transparent) Color.red
-    -->  "#CC0000"
-    try (hexA << swap transparent) "#C00F" -- with alpha channel
-    --> Just Color.red
-
--}
-hexA : Prism pr String TransparentColor x y
-hexA =
-    Base.prism "color_hexa"
-        TransparentColor.toHexA
-        TransparentColor.fromHexA
 
 
 paletteFromColor : Color -> TransparentColor

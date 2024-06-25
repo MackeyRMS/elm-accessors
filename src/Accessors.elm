@@ -76,6 +76,7 @@ import Base
 import Color exposing (Color)
 import Color.ElmUI.Accessors as ElmUI
 import Color.HSLuv.Accessors as HSLuv
+import Color.Hex.Accessors as Hex
 import Color.Oklab exposing (Oklab)
 import Color.Oklch exposing (Oklch)
 import Color.Oklch.Accessors as Oklch
@@ -923,7 +924,7 @@ solid =
 -}
 hexA : Base.Prism pr String TransparentColor x y
 hexA =
-    Palette.hexA
+    Hex.palette
 
 
 {-| oklch: This accessor lets you convert between oklch & avh4/elm-color

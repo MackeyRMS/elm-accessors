@@ -22,7 +22,8 @@
     "test": {
       "patterns": [
         "src",
-        "tests"
+        "tests/Laws",
+        "tests/Spec"
       ],
       "extensions": "elm",
       "ignore": "tests/VerifyExamples"
